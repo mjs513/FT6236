@@ -24,16 +24,10 @@ MIT license, all text above must be included in any redistribution
 FT6236::FT6236() { touches = 0; }
 
 /* Start I2C and check if the FT6236 is found. */
-boolean FT6236::begin(uint8_t thresh, int8_t sda, int8_t scl)
+boolean FT6236::begin(uint8_t thresh, TwoWire *i2c)
 {
-    if (sda != -1 && scl != -1)
-    {
-        Wire.begin(sda, scl);
-    }
-    else
-    {
-        Wire.begin();
-    }
+		_wire = i2c;
+		_wire->begin();
 
     // Adjust threshold
     writeRegister8(FT6236_REG_THRESHHOLD, thresh);
@@ -83,13 +77,13 @@ void FT6236::readData(void)
 {
 
     uint8_t i2cdat[16];
-    Wire.beginTransmission(FT6236_ADDR);
-    Wire.write((byte)0);
-    Wire.endTransmission();
+    _wire->beginTransmission(FT6236_ADDR);
+    _wire->write((byte)0);
+    _wire->endTransmission();
 
-    Wire.requestFrom((byte)FT6236_ADDR, (byte)16);
+    _wire->requestFrom((byte)FT6236_ADDR, (byte)16);
     for (uint8_t i = 0; i < 16; i++)
-        i2cdat[i] = Wire.read();
+        i2cdat[i] = _wire->read();
 
     touches = i2cdat[0x02];
     if ((touches > 2) || (touches == 0))
@@ -114,12 +108,12 @@ uint8_t FT6236::readRegister8(uint8_t reg)
 {
     uint8_t x;
 
-    Wire.beginTransmission(FT6236_ADDR);
-    Wire.write((byte)reg);
-    Wire.endTransmission();
+    _wire->beginTransmission(FT6236_ADDR);
+    _wire->write((byte)reg);
+    _wire->endTransmission();
 
-    Wire.requestFrom((byte)FT6236_ADDR, (byte)1);
-    x = Wire.read();
+    _wire->requestFrom((byte)FT6236_ADDR, (byte)1);
+    x = _wire->read();
 
     return x;
 }
@@ -128,10 +122,10 @@ uint8_t FT6236::readRegister8(uint8_t reg)
 void FT6236::writeRegister8(uint8_t reg, uint8_t val)
 {
 
-    Wire.beginTransmission(FT6236_ADDR);
-    Wire.write((byte)reg);
-    Wire.write((byte)val);
-    Wire.endTransmission();
+    _wire->beginTransmission(FT6236_ADDR);
+    _wire->write((byte)reg);
+    _wire->write((byte)val);
+    _wire->endTransmission();
 }
 
 /* Debug */
